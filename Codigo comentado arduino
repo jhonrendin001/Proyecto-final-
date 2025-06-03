@@ -1,0 +1,105 @@
+#include <LedControl.h>
+
+// Definir pines para la matriz MAX7219
+#define DATA_PIN 2   // DIN
+#define CLK_PIN  4   // CLK
+#define CS_PIN   3   // CS (LOAD)
+
+#define BUZZER_PIN 8
+
+// Inicializar matriz: DIN, CLK, CS, número de matrices (1)
+LedControl matriz = LedControl(DATA_PIN, CLK_PIN, CS_PIN, 1);
+
+String emocion = "";
+
+// Caritas para emociones
+byte happy[8] = {
+  B00111100,
+  B01000010,
+  B10100101,
+  B10000001,
+  B10100101,
+  B10011001,
+  B01000010,
+  B00111100
+};
+
+byte sad[8] = {
+  B00111100,
+  B01000010,
+  B10100101,
+  B10000001,
+  B10011001,
+  B10100101,
+  B01000010,
+  B00111100
+};
+
+byte angry[8] = {
+  B00111100,
+  B01000010,
+  B10110101,
+  B10000001,
+  B10011001,
+  B10100101,
+  B01000010,
+  B00111100
+};
+
+byte surprise[8] = {
+  B00111100,
+  B01000010,
+  B10100101,
+  B10000001,
+  B10011001,
+  B10111101,
+  B01000010,
+  B00111100
+};
+
+void setup() {
+  Serial.begin(9600);
+
+  matriz.shutdown(0, false);
+  matriz.setIntensity(0, 8);
+  matriz.clearDisplay(0);
+
+  pinMode(BUZZER_PIN, OUTPUT);
+}
+
+void loop() {
+  if (Serial.available()) {
+    emocion = Serial.readStringUntil('\n');
+    emocion.trim();
+
+    matriz.clearDisplay(0);
+    if (emocion == "happy") {
+      mostrar(happy);
+      tono(1000, 300);
+    } else if (emocion == "sad") {
+      mostrar(sad);
+      tono(300, 600);
+    } else if (emocion == "angry") {
+      mostrar(angry);
+      for (int i = 0; i < 3; i++) {
+        tono(700, 100);
+        delay(50);
+      }
+    } else if (emocion == "surprise") {
+      mostrar(surprise);
+      tono(900, 500);
+    }
+  }
+}
+
+void mostrar(byte cara[8]) {
+  for (int i = 0; i < 8; i++) {
+    matriz.setRow(0, i, cara[i]);
+  }
+}
+
+void tono(int frecuencia, int duracion) {
+  tone(BUZZER_PIN, frecuencia, duracion);
+  delay(duracion);
+  noTone(BUZZER_PIN);
+}
