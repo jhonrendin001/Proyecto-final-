@@ -1,0 +1,36 @@
+import cv2
+from deepface import DeepFace
+
+# Inicializar la cámara
+cap = cv2.VideoCapture(0)
+
+print("Iniciando detección de emociones...")
+
+try:
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("No se pudo capturar imagen")
+            break
+
+        # Mostrar la imagen en una ventana
+        cv2.imshow('Captura de Camara', frame)
+
+        # Analizar la imagen para detectar emociones
+        try:
+            result = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
+            emotion = result[0]['dominant_emotion']
+            print(f"Emoción detectada: {emotion}")
+        except Exception as e:
+            print("Error en el análisis:", e)
+
+        # Salir si se presiona la tecla 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+except KeyboardInterrupt:
+    print("Programa detenido manualmente.")
+
+# Liberar recursos
+cap.release()
+cv2.destroyAllWindows()
